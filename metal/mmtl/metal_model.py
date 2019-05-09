@@ -104,7 +104,7 @@ class MetalModel(nn.Module):
             # Extra .module call is to get past DataParallel wrapper
             input_module = self.input_modules[task_name].module
             if input_module not in outputs:
-                output = input_module(input)
+                output = input_module(input, is_input=True)
                 outputs[input_module] = output
 
             middle_module = self.middle_modules[task_name].module
