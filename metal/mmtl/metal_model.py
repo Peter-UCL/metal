@@ -114,6 +114,7 @@ class MetalModel(nn.Module):
 
             head_module = self.head_modules[task_name].module
             if head_module not in outputs:
+                outputs[middle_module]["data"] = outputs[middle_module]["data"][1]
                 output = head_module(outputs[middle_module])
                 outputs[head_module] = output
         return {t: outputs[self.head_modules[t].module] for t in task_names}
