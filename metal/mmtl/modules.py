@@ -13,7 +13,7 @@ class MetalModuleWrapper(nn.Module):
         super().__init__()
         self.module = module
 
-    def forward(self, X):
+    def forward(self, X, is_input=False):
         # The object that is passed out must be different from the object that gets
         # passed in so that cached outputs from intermediate modules aren't mutated
         if is_input:
