@@ -11,6 +11,8 @@ import torch
 import torch.optim as optim
 from torch._utils import _flatten_dense_tensors, _unflatten_dense_tensors
 
+import datetime
+
 from metal.logging import Checkpointer, LogWriter, TensorBoardWriter
 from metal.mmtl.mmtl_logger import Logger  # NOTE: we use special MMTL logger
 from metal.mmtl.task_scheduler import ProportionalScheduler
@@ -152,7 +154,7 @@ class MultitaskTrainer(object):
             self.config["seed"] = np.random.randint(1e6)
         set_seed(self.config["seed"])
 
-    def train_model(self, model, payloads, **kwargs):
+    def train_model(self, model, payloads, output_dir="~", **kwargs):
         # NOTE: misses="insert" so we can log extra metadata (e.g. num_parameters)
         # and eventually write to disk.
         self.config = recursive_merge_dicts(self.config, kwargs, misses="insert")
@@ -201,6 +203,7 @@ class MultitaskTrainer(object):
         self._reset_losses()
         for epoch in range(self.config["n_epochs"]):
             progress_bar = self.config["progress_bar"] and self.config["verbose"]
+
             t = tqdm(
                 enumerate(self.task_scheduler.get_batches(payloads, "train")),
                 total=self.batches_per_epoch,
@@ -277,6 +280,23 @@ class MultitaskTrainer(object):
                         if "loss" in key:
                             losses[key] = val
                     t.set_postfix(losses)
+
+
+            metrics_dict = self._execute_logging(
+                model, payloads, batch_size, force_log=True
+            )
+
+            output_eval_file = os.path.join(output_dir, "training_metrics.txt")
+
+            if os.path.exists(output_eval_file):
+                append_write = 'a' # append if already exists
+            else:
+                append_write = 'w' # make a new file if not
+
+            with open(output_eval_file, append_write) as writer:
+                writer.write("Epoch {0}: {1}\n".format(epoch, datetime.datetime.now()))
+                for key in sorted(metrics_dict.keys()):
+                    writer.write("%s = %s\n" % (key, str(metrics_dict[key])))
 
         model.eval()
         # Restore best model if applicable

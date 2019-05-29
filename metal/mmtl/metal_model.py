@@ -4,6 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import os
+
 from metal.utils import move_to_device, recursive_merge_dicts, set_seed
 
 model_defaults = {
@@ -328,6 +330,19 @@ class MetalModel(nn.Module):
         total = 0
         for batch_num, (Xb, Yb) in enumerate(payload.data_loader):
             Yb_probs = self.calculate_probs(Xb, target_tasks)
+
+            output_eval_file = os.path.join("/home/uceipa0/Scratch/results/MMTL_results", "probs.txt")
+
+            if os.path.exists(output_eval_file):
+                append_write = 'a' # append if already exists
+            else:
+                append_write = 'w' # make a new file if not
+
+            with open(output_eval_file, append_write) as writer:
+                writer.write("\nProbs:\n")
+                for key in sorted(Yb_probs.keys()):
+                    writer.write("%s = %s\n" % (key, str(Yb_probs[key])))
+
             for task_name, yb_probs in Yb_probs.items():
                 Ys_probs[task_name].extend(yb_probs)
             for label_name, yb in Yb.items():
