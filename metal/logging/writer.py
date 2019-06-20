@@ -48,11 +48,10 @@ class LogWriter(object):
 
         # Initialize log
         # Note we have a separate section for during-run metrics
-        commit = check_output(["git", "rev-parse", "--short", "HEAD"]).strip()
         self.log_dict = {
             "start_date": start_date,
             "start_time": start_time,
-            "commit": str(commit),
+            "commit": "0",
             "config": None,
             "run_log": defaultdict(list),
         }
