@@ -1,5 +1,6 @@
 import copy
 import os
+import sys
 import warnings
 from collections import defaultdict
 from pprint import pprint
@@ -320,10 +321,10 @@ class MultitaskTrainer(object):
             self.writer.write_metrics(metrics_dict)
             self.writer.write_log()
             self.writer.close()
-
+            
             # pickle and save the full model
-            full_model_path = os.path.join(self.writer.log_subdir, "model.pkl")
-            torch.save(model, full_model_path, pickle_module=dill)
+            full_model_path = os.path.join(self.writer.log_subdir, "model_state_dict.pkl")
+            torch.save(model.state_dict(), full_model_path)
             print(f"Full model saved at {full_model_path}")
 
         return metrics_dict
