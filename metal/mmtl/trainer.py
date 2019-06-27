@@ -153,7 +153,7 @@ class MultitaskTrainer(object):
             self.config["seed"] = np.random.randint(1e6)
         set_seed(self.config["seed"])
 
-    def train_model(self, model, payloads, **kwargs):
+    def train_model(self, model, payloads, results_path=None, **kwargs):
         # NOTE: misses="insert" so we can log extra metadata (e.g. num_parameters)
         # and eventually write to disk.
         self.config = recursive_merge_dicts(self.config, kwargs, misses="insert")
@@ -278,6 +278,27 @@ class MultitaskTrainer(object):
                         if "loss" in key:
                             losses[key] = val
                     t.set_postfix(losses)
+            
+            if results_path:
+                if not os.path.exists(results_path):
+                    os.makedirs(results_path)
+
+                train_metrics_dict = self.calculate_metrics(model, payloads, split="train")
+                valid_metrics_dict = self.calculate_metrics(model, payloads, split="valid")
+
+                output_eval_file = os.path.join(results_path, "training_metrics.txt")
+
+                if os.path.exists(output_eval_file):
+                    append_write = 'a' # append if already exists
+                else:
+                    append_write = 'w' # make a new file if not
+
+                with open(output_eval_file, append_write) as writer:
+                    writer.write("Epoch {0}: {1}\n".format(epoch, datetime.datetime.now()))
+                    for key in sorted(train_metrics_dict.keys()):
+                        writer.write("Training: %s = %s\n" % (key, str(train_metrics_dict[key])))
+                    for key in sorted(valid_metrics_dict.keys()):
+                        writer.write("Validation: %s = %s\n" % (key, str(valid_metrics_dict[key]))) 
 
         model.eval()
         # Restore best model if applicable
