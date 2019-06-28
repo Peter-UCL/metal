@@ -294,7 +294,7 @@ class MultitaskTrainer(object):
                     append_write = 'w' # make a new file if not
 
                 with open(output_eval_file, append_write) as writer:
-                    writer.write("Epoch {0}: {1}\n".format(epoch, datetime.datetime.now()))
+                    writer.write("Epoch {0}:\n".format(epoch))
                     for key in sorted(train_metrics_dict.keys()):
                         writer.write("Training: %s = %s\n" % (key, str(train_metrics_dict[key])))
                     for key in sorted(valid_metrics_dict.keys()):
