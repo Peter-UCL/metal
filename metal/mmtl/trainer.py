@@ -288,7 +288,7 @@ class MultitaskTrainer(object):
 
                 output_eval_file = os.path.join(results_path, "training_metrics.txt")
 
-                if os.path.exists(output_eval_file):
+                if epoch > 0:
                     append_write = 'a' # append if already exists
                 else:
                     append_write = 'w' # make a new file if not
