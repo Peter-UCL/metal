@@ -289,9 +289,9 @@ class MultitaskTrainer(object):
                 output_eval_file = os.path.join(results_path, "training_metrics.txt")
 
                 if epoch > 0:
-                    append_write = 'a' # append if already exists
+                    append_write = 'a' # append if already started run
                 else:
-                    append_write = 'w' # make a new file if not
+                    append_write = 'w' # create/overwrite file at the start of training
 
                 with open(output_eval_file, append_write) as writer:
                     writer.write("Epoch {0}:\n".format(epoch))
